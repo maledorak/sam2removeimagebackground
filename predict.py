@@ -211,7 +211,7 @@ class Predictor(BasePredictor):
             center = np.array([[width // 2, height // 2]], dtype=np.float32)
             return np.tile(center, (5, 1))  # Return 5 identical center points as fallback
 
-    def remove_background(self, frame, mask, bg_color):
+    def remove_background(self, frame, mask, bg_color, no_background=True):
         mask = mask.squeeze()
         if mask.dtype == bool:
             mask = mask.astype(np.uint8) * 255
@@ -228,7 +228,10 @@ class Predictor(BasePredictor):
         bg = cv2.bitwise_and(bg, bg, mask=cv2.bitwise_not(mask))
 
         # Combine foreground and background
-        result = cv2.add(fg, bg)
+        if no_background:
+            result = fg
+        else:
+            result = cv2.add(fg, bg)
 
         # Clean up the hair area
         result = self.clean_hair_area(frame, result, mask, bg_color)
